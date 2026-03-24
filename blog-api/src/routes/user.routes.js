@@ -3,8 +3,11 @@ const { getProfile, updateProfile, getUserById, getAllUsers } = require('../cont
 const { authenticate } = require('../middleware/auth');
 const validate = require('../middleware/validate');
 const { updateProfileValidation } = require('../validators/user.validator');
+const { cacheMiddleware, invalidateCache } = require('../middleware/cache');
 
 const router = Router();
+const userCache = cacheMiddleware();
+const clearUsersCache = invalidateCache('cache:/api/v1/users*');
 
 /**
  * @swagger
@@ -16,7 +19,7 @@ const router = Router();
  *       200:
  *         description: List of users
  */
-router.get('/', getAllUsers);
+router.get('/', userCache, getAllUsers);
 
 /**
  * @swagger
@@ -60,7 +63,7 @@ router.get('/profile', authenticate, getProfile);
  *       401:
  *         description: Not authenticated
  */
-router.put('/profile', authenticate, validate(updateProfileValidation), updateProfile);
+router.put('/profile', authenticate, validate(updateProfileValidation), clearUsersCache, updateProfile);
 
 /**
  * @swagger
@@ -80,6 +83,6 @@ router.put('/profile', authenticate, validate(updateProfileValidation), updatePr
  *       404:
  *         description: User not found
  */
-router.get('/:id', getUserById);
+router.get('/:id', userCache, getUserById);
 
 module.exports = router;

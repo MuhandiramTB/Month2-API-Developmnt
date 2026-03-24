@@ -6,8 +6,11 @@ const {
 const { authenticate } = require('../middleware/auth');
 const validate = require('../middleware/validate');
 const { createPostValidation, updatePostValidation } = require('../validators/post.validator');
+const { cacheMiddleware, invalidateCache } = require('../middleware/cache');
 
 const router = Router();
+const postCache = cacheMiddleware();
+const clearPostsCache = invalidateCache('cache:/api/v1/posts*');
 
 /**
  * @swagger
@@ -44,7 +47,7 @@ const router = Router();
  *       200:
  *         description: Paginated list of posts
  */
-router.get('/', getAllPosts);
+router.get('/', postCache, getAllPosts);
 
 /**
  * @swagger
@@ -63,7 +66,7 @@ router.get('/', getAllPosts);
  *       404:
  *         description: Post not found
  */
-router.get('/slug/:slug', getPostBySlug);
+router.get('/slug/:slug', postCache, getPostBySlug);
 
 /**
  * @swagger
@@ -80,7 +83,7 @@ router.get('/slug/:slug', getPostBySlug);
  *       200:
  *         description: User's posts
  */
-router.get('/user/:userId', getPostsByUser);
+router.get('/user/:userId', postCache, getPostsByUser);
 
 /**
  * @swagger
@@ -99,7 +102,7 @@ router.get('/user/:userId', getPostsByUser);
  *       404:
  *         description: Post not found
  */
-router.get('/:id', getPostById);
+router.get('/:id', postCache, getPostById);
 
 /**
  * @swagger
@@ -137,7 +140,7 @@ router.get('/:id', getPostById);
  *       401:
  *         description: Not authenticated
  */
-router.post('/', authenticate, validate(createPostValidation), createPost);
+router.post('/', authenticate, validate(createPostValidation), clearPostsCache, createPost);
 
 /**
  * @swagger
@@ -171,7 +174,7 @@ router.post('/', authenticate, validate(createPostValidation), createPost);
  *       404:
  *         description: Post not found
  */
-router.put('/:id', authenticate, validate(updatePostValidation), updatePost);
+router.put('/:id', authenticate, validate(updatePostValidation), clearPostsCache, updatePost);
 
 /**
  * @swagger
@@ -194,6 +197,6 @@ router.put('/:id', authenticate, validate(updatePostValidation), updatePost);
  *       404:
  *         description: Post not found
  */
-router.delete('/:id', authenticate, deletePost);
+router.delete('/:id', authenticate, clearPostsCache, deletePost);
 
 module.exports = router;

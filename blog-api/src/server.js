@@ -1,6 +1,7 @@
 const app = require('./app');
 const config = require('./config');
 const { pool } = require('./database/connection');
+const { getRedisClient } = require('./config/redis');
 
 const startServer = async () => {
   try {
@@ -8,6 +9,9 @@ const startServer = async () => {
     const client = await pool.connect();
     console.log('✅ Connected to PostgreSQL database');
     client.release();
+
+    // Attempt Redis connection (optional - won't block startup)
+    await getRedisClient();
 
     // Start server
     app.listen(config.port, () => {

@@ -21,4 +21,9 @@ module.exports = {
     windowMs: parseInt(process.env.RATE_LIMIT_WINDOW_MS, 10) || 15 * 60 * 1000,
     max: parseInt(process.env.RATE_LIMIT_MAX, 10) || 100,
   },
+
+  redis: {
+    url: process.env.REDIS_URL || 'redis://localhost:6379',
+    cacheTTL: parseInt(process.env.CACHE_TTL, 10) || 60,
+  },
 };
